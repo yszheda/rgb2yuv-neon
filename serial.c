@@ -3,47 +3,52 @@
 #include <time.h>
 #include <stdint.h>
 
+// https://en.wikipedia.org/wiki/YUV
+// Full swing for BT.601
 void RGB2YUV_serial(unsigned char *yuv, unsigned char *rgb, int pixel_num)
 {
-    for (int i = 0; i < pixel_num; ++i) {
-            uint8_t r = rgb[i * 3];
-            uint8_t g = rgb[i * 3 + 1];
-            uint8_t b = rgb[i * 3 + 2];
+    int i;
+    for (i = 0; i < pixel_num; ++i) {
+        uint8_t r = rgb[i * 3];
+        uint8_t g = rgb[i * 3 + 1];
+        uint8_t b = rgb[i * 3 + 2];
 
-            uint16_t y_tmp = 76 * r + 150 * g + 29 * b;
-            int16_t u_tmp = -43 * r - 84 * g + 127 * b;
-            int16_t v_tmp = 127 * r - 106 * g - 21 * b;
+        uint16_t y_tmp = 76 * r + 150 * g + 29 * b;
+        int16_t u_tmp = -43 * r - 84 * g + 127 * b;
+        int16_t v_tmp = 127 * r - 106 * g - 21 * b;
 
-            y_tmp = (y_tmp + 128) >> 8;
-            u_tmp = (u_tmp + 128) >> 8;
-            v_tmp = (v_tmp + 128) >> 8;
+        y_tmp = (y_tmp + 128) >> 8;
+        u_tmp = (u_tmp + 128) >> 8;
+        v_tmp = (v_tmp + 128) >> 8;
 
-            yuv[i * 3] = (uint8_t) y_tmp;
-            yuv[i * 3 + 1] = (uint8_t) u_tmp + 128;
-            yuv[i * 3 + 2] = (uint8_t) v_tmp + 128;
+        yuv[i * 3] = (uint8_t) y_tmp;
+        yuv[i * 3 + 1] = (uint8_t) (u_tmp + 128);
+        yuv[i * 3 + 2] = (uint8_t) (v_tmp + 128);
     }
 }
 
 void RGB2YUV_serial1(unsigned char *yuv, unsigned char *rgb, int pixel_num)
 {
-    for (int i = 0; i < pixel_num; ++i) {
-            float r = rgb[i * 3];
-            float g = rgb[i * 3 + 1];
-            float b = rgb[i * 3 + 2];
-            float y = 0.299*r + 0.587*g + 0.114*b;
-            float u = 0.492 * (b - y);
-            float v = 0.877 * (r - y);
+    int i;
+    for (i = 0; i < pixel_num; ++i) {
+        float r = rgb[i * 3];
+        float g = rgb[i * 3 + 1];
+        float b = rgb[i * 3 + 2];
+        float y = 0.299*r + 0.587*g + 0.114*b;
+        float u = 0.492 * (b - y);
+        float v = 0.877 * (r - y);
 
-            yuv[i * 3] = (unsigned char) y;
-            yuv[i * 3 + 1] = (unsigned char) u;
-            yuv[i * 3 + 2] = (unsigned char) v;
+        yuv[i * 3] = (unsigned char) y;
+        yuv[i * 3 + 1] = (unsigned char) u;
+        yuv[i * 3 + 2] = (unsigned char) v;
     }
 }
 
 void RGB2YUV_serial2(unsigned char *yuv, unsigned char *rgb, int width, int height)
 {
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
+    int i, j;
+    for (i = 0; i < height; ++i) {
+        for (j = 0; j < width; ++j) {
             float r = rgb[(i*height + j) * 3];
             float g = rgb[(i*height + j) * 3 + 1];
             float b = rgb[(i*height + j) * 3 + 2];
