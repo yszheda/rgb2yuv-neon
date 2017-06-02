@@ -43,16 +43,14 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         low_y = vmull_u8(low_r, scalar);
         // NOTE: cannot use scalar multiplication here
         // because it cannot support uint8_t scalar.
-        // The arm gcc compiler keeps complaining ozz...
+        // The arm gcc compiler keeps complaining oddly...
         // error: incompatible types when assigning to type ‘uint16x8_t’ from type ‘int’
         // high_y = vmul_n_u8(high_r, 76);
 
-        // high_y = vmlal_n_u8(high_y, high_g, 150);
         scalar = vdup_n_u8(150);
         high_y = vmlal_u8(high_y, high_g, scalar);
         low_y = vmlal_u8(low_y, low_g, scalar);
 
-        // high_y = vmlal_n_u8(high_y, high_b, 29);
         scalar = vdup_n_u8(29);
         high_y = vmlal_u8(high_y, high_b, scalar);
         low_y = vmlal_u8(low_y, low_b, scalar);
@@ -88,7 +86,7 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         high_v = vmlal_s8(high_v, signed_high_b, signed_scalar);
         low_v = vmlal_s8(low_v, signed_low_b, signed_scalar);
 
-        // 2. Scale down (">>8") to 8-bit values with u16_rounding ("+128") (Y′: unsigned, U/V: signed)
+        // 2. Scale down (">>8") to 8-bit values with rounding ("+128") (Y′: unsigned, U/V: signed)
         // 3. Add an offset to the values to eliminate any negative values (all results are 8-bit unsigned)
         uint8x16x3_t pixel_yuv;
 
@@ -112,8 +110,8 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         // Store
         vst3q_u8(yuv, pixel_yuv);
 
-        rgb += 3 * 8;
-        yuv += 3 * 8;
+        rgb += 3 * 16;
+        yuv += 3 * 16;
     }
 }
 
