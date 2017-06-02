@@ -44,25 +44,6 @@ void RGB2YUV_serial1(unsigned char *yuv, unsigned char *rgb, int pixel_num)
     }
 }
 
-void RGB2YUV_serial2(unsigned char *yuv, unsigned char *rgb, int width, int height)
-{
-    int i, j;
-    for (i = 0; i < height; ++i) {
-        for (j = 0; j < width; ++j) {
-            float r = rgb[(i*height + j) * 3];
-            float g = rgb[(i*height + j) * 3 + 1];
-            float b = rgb[(i*height + j) * 3 + 2];
-            float y = 0.299*r + 0.587*g + 0.114*b;
-            float u = 0.492 * (b - y);
-            float v = 0.877 * (r - y);
-
-            yuv[(i*height + j) * 3] = (unsigned char) y;
-            yuv[(i*height + j) * 3 + 1] = (unsigned char) u;
-            yuv[(i*height + j) * 3 + 2] = (unsigned char) v;
-        }
-    }
-}
-
 int main(int argc, char* argv[])
 {
     if(argc != 3) {
