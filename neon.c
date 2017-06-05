@@ -186,7 +186,7 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         print_u16x8(high_y);
         print_u16x8(low_y);
 
-        pixel_yuv.val[0] = vcombine_u8(vqrshrn_n_u16(high_y, 8), vqrshrn_n_u16(low_y, 8));
+        pixel_yuv.val[0] = vcombine_u8(vqrshrn_n_u16(low_y, 8), vqrshrn_n_u16(high_y, 8));
 
 
         printf("Y: y >> 8\n");
@@ -197,13 +197,13 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
 
         high_u = vaddq_s16(high_u, s16_rounding);
         low_u = vaddq_s16(low_u, s16_rounding);
-        int8x16_t u = vcombine_s8(vqrshrn_n_s16(high_u, 8), vqrshrn_n_s16(low_u, 8));
+        int8x16_t u = vcombine_s8(vqrshrn_n_s16(low_u, 8), vqrshrn_n_s16(high_u, 8));
         u = vaddq_s8(u, s8_rounding);
         pixel_yuv.val[1] = vreinterpretq_u8_s8(u);
 
         high_v = vaddq_s16(high_v, s16_rounding);
         low_v = vaddq_s16(low_v, s16_rounding);
-        int8x16_t v = vcombine_s8(vqrshrn_n_s16(high_v, 8), vqrshrn_n_s16(low_v, 8));
+        int8x16_t v = vcombine_s8(vqrshrn_n_s16(low_v, 8), vqrshrn_n_s16(high_v, 8));
         v = vaddq_s8(v, s8_rounding);
         pixel_yuv.val[2] = vreinterpretq_u8_s8(v);
 
