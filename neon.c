@@ -3,6 +3,60 @@
 #include <time.h>
 #include <arm_neon.h>
 
+void print_u8x8(uint8x8_t value)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
+void print_s8x8(int8x8_t value)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
+void print_u16x8(uint16x8_t value)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
+void print_s16x8(int16x8_t value)
+{
+    int i;
+    for (i = 0; i < 8; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
+void print_u8x16(uint8x16_t value)
+{
+    int i;
+    for (i = 0; i < 16; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
+void print_s8x16(int8x16_t value)
+{
+    int i;
+    for (i = 0; i < 16; ++i) {
+        printf("%d ", value[i]);
+    }
+    printf("\n");
+}
+
 
 // https://en.wikipedia.org/wiki/YUV
 // Full swing for BT.601
@@ -35,6 +89,25 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         int8x8_t signed_low_b = vreinterpret_s8_u8(low_b);
 
 
+        printf("R\n");
+        print_u8x8(high_r);
+        print_u8x8(low_r);
+        print_s8x8(signed_high_r);
+        print_s8x8(signed_low_r);
+
+        printf("G\n");
+        print_u8x8(high_g);
+        print_u8x8(low_g);
+        print_s8x8(signed_high_g);
+        print_s8x8(signed_low_g);
+
+        printf("B\n");
+        print_u8x8(high_b);
+        print_u8x8(low_b);
+        print_s8x8(signed_high_b);
+        print_s8x8(signed_low_b);
+
+
         // 1. Multiply transform matrix (Y′: unsigned, U/V: signed)
         uint16x8_t high_y;
         uint16x8_t low_y;
@@ -47,13 +120,29 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         // error: incompatible types when assigning to type ‘uint16x8_t’ from type ‘int’
         // high_y = vmul_n_u8(high_r, 76);
 
+        printf("Y: r * 76\n");
+        print_u16x8(high_y);
+        print_u16x8(low_y);
+
+
         scalar = vdup_n_u8(150);
         high_y = vmlal_u8(high_y, high_g, scalar);
         low_y = vmlal_u8(low_y, low_g, scalar);
 
+
+        printf("Y: g * 150\n");
+        print_u16x8(high_y);
+        print_u16x8(low_y);
+
+
         scalar = vdup_n_u8(29);
         high_y = vmlal_u8(high_y, high_b, scalar);
         low_y = vmlal_u8(low_y, low_b, scalar);
+
+        printf("Y: b * 29\n");
+        print_u16x8(high_y);
+        print_u16x8(low_y);
+
 
 
         int16x8_t high_u;
@@ -92,7 +181,19 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
 
         high_y = vaddq_u16(high_y, u16_rounding);
         low_y = vaddq_u16(low_y, u16_rounding);
+
+        printf("Y: y + 128\n");
+        print_u16x8(high_y);
+        print_u16x8(low_y);
+
         pixel_yuv.val[0] = vcombine_u8(vqrshrn_n_u16(high_y, 8), vqrshrn_n_u16(low_y, 8));
+
+
+        printf("Y: y >> 8\n");
+        print_u8x8(vqrshrn_n_u16(high_y, 8));
+        print_u8x8(vqrshrn_n_u16(low_y, 8));
+        print_u8x16(pixel_yuv.val[0]);
+
 
         high_u = vaddq_s16(high_u, s16_rounding);
         low_u = vaddq_s16(low_u, s16_rounding);
