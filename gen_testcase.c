@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
 {
     srand(time(NULL));
 
-    if(argc != 4) {
+    if (argc != 4) {
         printf("gen_testcase <width> <height> <filename>");
         return 0;
     }
@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
     fprintf(out, "%d %d\n", width, height);
 
     int i, j;
-    for(i = 0; i < height; i++){
-        for(j = 0; j < width; j++){
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
             int k;
             for (k = 0; k < 3; k++) {
                 unsigned char value = rand() % 256;

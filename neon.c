@@ -337,14 +337,13 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
 
 int main(int argc, char* argv[])
 {
-    if(argc != 3) {
+    if (argc != 3) {
         printf("<prog> <input> <output>");
         return 0;
     }
 
     FILE* fp_in;
-    if((fp_in = fopen(argv[1], "r")) == NULL)
-    {
+    if ((fp_in = fopen(argv[1], "r")) == NULL) {
         printf("Error open input file!\n");
         exit(1);
     }
@@ -357,8 +356,7 @@ int main(int argc, char* argv[])
     unsigned char *rgb = (unsigned char *) malloc(channel_datasize);
     unsigned char *yuv = (unsigned char *) malloc(channel_datasize);
 
-    if(fread(rgb, sizeof(unsigned char), channel_num, fp_in) == EOF)
-    {
+    if (fread(rgb, sizeof(unsigned char), channel_num, fp_in) == EOF) {
         printf("fread error!\n");
         exit(0);
     }
@@ -377,13 +375,11 @@ int main(int argc, char* argv[])
 
 
     FILE* fp_out;
-    if((fp_out = fopen(argv[2], "w")) == NULL)
-    {
+    if ((fp_out = fopen(argv[2], "w")) == NULL) {
         printf("Error open output file!\n");
         exit(1);
     }
-    if(fwrite(yuv, sizeof(unsigned char), channel_num, fp_out) != channel_datasize)
-    {
+    if (fwrite(yuv, sizeof(unsigned char), channel_num, fp_out) != channel_datasize) {
         printf("fwrite error!\n");
         exit(0);
     }
