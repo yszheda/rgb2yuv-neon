@@ -3,6 +3,8 @@
 #include <time.h>
 #include <arm_neon.h>
 
+#define DEBUG 1
+
 void print_u8x8(uint8x8_t value)
 {
     int i;
@@ -88,7 +90,7 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         int8x8_t signed_high_b = vreinterpret_s8_u8(high_b);
         int8x8_t signed_low_b = vreinterpret_s8_u8(low_b);
 
-
+#ifdef DEBUG
         printf("R\n");
         print_u8x8(high_r);
         print_u8x8(low_r);
@@ -106,7 +108,7 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         print_u8x8(low_b);
         print_s8x8(signed_high_b);
         print_s8x8(signed_low_b);
-
+#endif
 
         // 1. Multiply transform matrix (Y′: unsigned, U/V: signed)
         uint16x8_t high_y;
@@ -120,30 +122,31 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         // error: incompatible types when assigning to type ‘uint16x8_t’ from type ‘int’
         // high_y = vmul_n_u8(high_r, 76);
 
+#ifdef DEBUG
         printf("Y: r * 76\n");
         print_u16x8(high_y);
         print_u16x8(low_y);
-
+#endif
 
         scalar = vdup_n_u8(150);
         high_y = vmlal_u8(high_y, high_g, scalar);
         low_y = vmlal_u8(low_y, low_g, scalar);
 
-
+#ifdef DEBUG
         printf("Y: g * 150\n");
         print_u16x8(high_y);
         print_u16x8(low_y);
-
+#endif
 
         scalar = vdup_n_u8(29);
         high_y = vmlal_u8(high_y, high_b, scalar);
         low_y = vmlal_u8(low_y, low_b, scalar);
 
+#ifdef DEBUG
         printf("Y: b * 29\n");
         print_u16x8(high_y);
         print_u16x8(low_y);
-
-
+#endif
 
         int16x8_t high_u;
         int16x8_t low_u;
@@ -182,18 +185,21 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         high_y = vaddq_u16(high_y, u16_rounding);
         low_y = vaddq_u16(low_y, u16_rounding);
 
+#ifdef DEBUG
         printf("Y: y + 128\n");
         print_u16x8(high_y);
         print_u16x8(low_y);
+#endif
 
         pixel_yuv.val[0] = vcombine_u8(vqrshrn_n_u16(low_y, 8), vqrshrn_n_u16(high_y, 8));
 
 
+#ifdef DEBUG
         printf("Y: y >> 8\n");
         print_u8x8(vqrshrn_n_u16(high_y, 8));
         print_u8x8(vqrshrn_n_u16(low_y, 8));
         print_u8x16(pixel_yuv.val[0]);
-
+#endif
 
         high_u = vaddq_s16(high_u, s16_rounding);
         low_u = vaddq_s16(low_u, s16_rounding);
