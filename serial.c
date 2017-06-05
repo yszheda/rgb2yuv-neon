@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <stdint.h>
 
@@ -80,7 +81,7 @@ void RGB2YUV_float(unsigned char *yuv, unsigned char *rgb, int pixel_num)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3 || argc != 4) {
+    if (argc != 3 && argc != 4) {
         printf("<prog> <input> <output> [-f]");
         return 0;
     }
@@ -111,7 +112,7 @@ int main(int argc, char* argv[])
     struct timespec start, end;
     double total_time;
     clock_gettime(CLOCK_REALTIME,&start);
-    if (strcmp(argv[3], "-f") == 0) {
+    if (argc >= 4 && strcmp(argv[3], "-f") == 0) {
         RGB2YUV_float(yuv, rgb, width * height);
     } else {
         RGB2YUV_integer(yuv, rgb, width * height);
