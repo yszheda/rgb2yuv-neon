@@ -22,7 +22,7 @@ void RGB2YUV_serial(unsigned char *yuv, unsigned char *rgb, int pixel_num)
         int16_t v_tmp = 127 * r - 106 * g - 21 * b;
 
         if (i == 0) {
-            printf("u: %d\n", u_tmp);
+            printf("y: %d\n", y_tmp);
         }
 
         y_tmp = (y_tmp + 128) >> 8;
@@ -30,7 +30,7 @@ void RGB2YUV_serial(unsigned char *yuv, unsigned char *rgb, int pixel_num)
         v_tmp = (v_tmp + 128) >> 8;
 
         if (i == 0) {
-            printf("u: %d\n", u_tmp);
+            printf("y: %d\n", y_tmp);
         }
 
         yuv[i * 3] = (uint8_t) y_tmp;
@@ -38,7 +38,7 @@ void RGB2YUV_serial(unsigned char *yuv, unsigned char *rgb, int pixel_num)
         yuv[i * 3 + 2] = (uint8_t) (v_tmp + 128);
 
         if (i == 0) {
-            printf("u: %d\n", yuv[i * 3 + 1]);
+            printf("y: %d\n", yuv[i * 3]);
         }
     }
 }
