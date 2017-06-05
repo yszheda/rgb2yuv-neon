@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 
     // Compute
     struct timespec start, end;
-    double totalTime;
+    double total_time;
     clock_gettime(CLOCK_REALTIME,&start);
     if (strcmp(argv[3], "-f") == 0) {
         RGB2YUV_float(yuv, rgb, width * height);
@@ -117,8 +117,8 @@ int main(int argc, char* argv[])
         RGB2YUV_integer(yuv, rgb, width * height);
     }
     clock_gettime(CLOCK_REALTIME,&end);
-    totalTime = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
-    printf("RGB2YUV_serial: %fms\n", totalTime);
+    total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
+    printf("RGB2YUV_serial: %f ms\n", total_time);
 
 
     FILE* fp_out;

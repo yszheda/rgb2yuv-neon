@@ -371,7 +371,7 @@ int main(int argc, char* argv[])
     RGB2YUV_NEON(yuv, rgb, width * height);
     clock_gettime(CLOCK_REALTIME,&end);
     total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
-    printf("RGB2YUV_NEON: %fms\n", total_time);
+    printf("RGB2YUV_NEON: %f ms\n", total_time);
 
 
     FILE* fp_out;
