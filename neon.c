@@ -236,13 +236,13 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         print_u16x8(low_y);
 #endif
 
-        pixel_yuv.val[0] = vcombine_u8(vqrshrn_n_u16(low_y, 8), vqrshrn_n_u16(high_y, 8));
+        pixel_yuv.val[0] = vcombine_u8(vqshrn_n_u16(low_y, 8), vqshrn_n_u16(high_y, 8));
 
 
 #ifdef DEBUG
         printf("Y: y >> 8\n");
-        print_u8x8(vqrshrn_n_u16(high_y, 8));
-        print_u8x8(vqrshrn_n_u16(low_y, 8));
+        print_u8x8(vqshrn_n_u16(high_y, 8));
+        print_u8x8(vqshrn_n_u16(low_y, 8));
         print_u8x16(pixel_yuv.val[0]);
 #endif
 
@@ -255,12 +255,12 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         print_s16x8(low_u);
 #endif
 
-        int8x16_t u = vcombine_s8(vqrshrn_n_s16(low_u, 8), vqrshrn_n_s16(high_u, 8));
+        int8x16_t u = vcombine_s8(vqshrn_n_s16(low_u, 8), vqshrn_n_s16(high_u, 8));
 
 #ifdef DEBUG
         printf("U: u >> 8\n");
-        print_s8x8(vqrshrn_n_s16(low_u, 8));
-        print_s8x8(vqrshrn_n_s16(high_u, 8));
+        print_s8x8(vqshrn_n_s16(low_u, 8));
+        print_s8x8(vqshrn_n_s16(high_u, 8));
         print_s8x16(u);
 #endif
 
@@ -282,12 +282,12 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         print_s16x8(low_v);
 #endif
 
-        int8x16_t v = vcombine_s8(vqrshrn_n_s16(low_v, 8), vqrshrn_n_s16(high_v, 8));
+        int8x16_t v = vcombine_s8(vqshrn_n_s16(low_v, 8), vqshrn_n_s16(high_v, 8));
 
 #ifdef DEBUG
         printf("V: v >> 8\n");
-        print_s8x8(vqrshrn_n_s16(low_v, 8));
-        print_s8x8(vqrshrn_n_s16(high_v, 8));
+        print_s8x8(vqshrn_n_s16(low_v, 8));
+        print_s8x8(vqshrn_n_s16(high_v, 8));
         print_s8x16(v);
 #endif
 
