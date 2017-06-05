@@ -5,6 +5,12 @@
 
 // #define DEBUG 1
 
+
+////////////////////////////////////////////////////////////////////////////////
+/*
+ * Functions used for debugging
+ */
+
 void print_u8x8(uint8x8_t value)
 {
     int i;
@@ -69,6 +75,7 @@ int16x8_t U8ToS16(uint8x8_t value)
     return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 // https://en.wikipedia.org/wiki/YUV
 // Full swing for BT.601
@@ -82,11 +89,13 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
 
     int i;
     for (i = 0; i < count; ++i) {
-        // Load
+        // Load rgb
         uint8x16x3_t pixel_rgb = vld3q_u8(rgb);
 
         uint8x8_t high_r = vget_high_u8(pixel_rgb.val[0]);
         uint8x8_t low_r = vget_low_u8(pixel_rgb.val[0]);
+        // NOTE: vreinterpret will change the actual value
+        // Use hand-written function instead
         int16x8_t signed_high_r = U8ToS16(high_r);
         int16x8_t signed_low_r = U8ToS16(low_r);
 
@@ -161,7 +170,6 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         int16x8_t high_u;
         int16x8_t low_u;
         int16x8_t signed_scalar = vdupq_n_s16(-43);
-        // NOTE: vreinterpret will not change the value?
         high_u = vmulq_s16(signed_high_r, signed_scalar);
         low_u = vmulq_s16(signed_low_r, signed_scalar);
 

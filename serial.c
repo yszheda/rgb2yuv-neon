@@ -3,6 +3,8 @@
 #include <time.h>
 #include <stdint.h>
 
+// #ifdef DEBUG 1
+
 // https://en.wikipedia.org/wiki/YUV
 // Full swing for BT.601
 void RGB2YUV_serial(unsigned char *yuv, unsigned char *rgb, int pixel_num)

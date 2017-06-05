@@ -5,7 +5,7 @@ LOCAL_MODULE := neon
 LOCAL_SRC_FILES := neon.c
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
-LOCAL_CFLAGS := -g -mfloat-abi=softfp -mfpu=neon
+LOCAL_CFLAGS := -mfloat-abi=softfp -mfpu=neon
 # LOCAL_LDLIBS := -lrt
 # LOCAL_LDFLAGS := -lrt
 
