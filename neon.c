@@ -11,6 +11,7 @@
  * Functions used for debugging
  */
 
+#ifdef DEBUG
 void print_u8x8(uint8x8_t value)
 {
     int i;
@@ -64,6 +65,7 @@ void print_s8x16(int8x16_t value)
     }
     printf("\n");
 }
+#endif
 
 int16x8_t U8ToS16(uint8x8_t value)
 {
@@ -81,6 +83,8 @@ int16x8_t U8ToS16(uint8x8_t value)
 // Full swing for BT.601
 void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, int pixel_num)
 {
+    const uint8x8_t u8_zero = vdup_n_u8(0);
+    const int8x8_t s8_zero = vdup_n_s8(0);
     const uint16x8_t u16_rounding = vdupq_n_u16(128);
     const int16x8_t s16_rounding = vdupq_n_s16(128);
     const int8x16_t s8_rounding = vdupq_n_s8(128);
@@ -96,18 +100,20 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         uint8x8_t low_r = vget_low_u8(pixel_rgb.val[0]);
         // NOTE: vreinterpret will change the actual value
         // Use hand-written function instead
-        int16x8_t signed_high_r = U8ToS16(high_r);
-        int16x8_t signed_low_r = U8ToS16(low_r);
+        // int16x8_t signed_high_r = U8ToS16(high_r);
+        // int16x8_t signed_low_r = U8ToS16(low_r);
+        int16x8_t signed_high_r = vreinterpretq_s16_u16(vaddl_u8(high_r, u8_zero));
+        int16x8_t signed_low_r = vreinterpretq_s16_u16(vaddl_u8(low_r, u8_zero));
 
         uint8x8_t high_g = vget_high_u8(pixel_rgb.val[1]);
         uint8x8_t low_g = vget_low_u8(pixel_rgb.val[1]);
-        int16x8_t signed_high_g = U8ToS16(high_g);
-        int16x8_t signed_low_g = U8ToS16(low_g);
+        int16x8_t signed_high_g = vreinterpretq_s16_u16(vaddl_u8(high_g, u8_zero));
+        int16x8_t signed_low_g = vreinterpretq_s16_u16(vaddl_u8(low_g, u8_zero));
 
         uint8x8_t high_b = vget_high_u8(pixel_rgb.val[2]);
         uint8x8_t low_b = vget_low_u8(pixel_rgb.val[2]);
-        int16x8_t signed_high_b = U8ToS16(high_b);
-        int16x8_t signed_low_b = U8ToS16(low_b);
+        int16x8_t signed_high_b = vreinterpretq_s16_u16(vaddl_u8(high_b, u8_zero));
+        int16x8_t signed_low_b = vreinterpretq_s16_u16(vaddl_u8(low_b, u8_zero));
 
 #ifdef DEBUG
         printf("R\n");
