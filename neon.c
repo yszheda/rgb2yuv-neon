@@ -65,7 +65,6 @@ void print_s8x16(int8x16_t value)
     }
     printf("\n");
 }
-#endif
 
 int16x8_t U8ToS16(uint8x8_t value)
 {
@@ -75,6 +74,45 @@ int16x8_t U8ToS16(uint8x8_t value)
         result[i] = value[i];
     }
     return result;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
+// https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+static inline void init_perfcounters (int32_t do_reset, int32_t enable_divider)
+{
+    // in general enable all counters (including cycle counter)
+    int32_t value = 1;
+
+    // peform reset:
+    if (do_reset)
+    {
+        value |= 2;     // reset all counters to zero.
+        value |= 4;     // reset cycle counter to zero.
+    }
+
+    if (enable_divider)
+        value |= 8;     // enable "by 64" divider for CCNT.
+
+    value |= 16;
+
+    // program the performance-counter control-register:
+    asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+
+    // enable all counters:
+    asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+
+    // clear overflows:
+    asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+}
+
+static inline unsigned int get_cyclecount (void)
+{
+    unsigned int value;
+    // Read CCNT Register
+    asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
+    return value;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,8 +138,6 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         uint8x8_t low_r = vget_low_u8(pixel_rgb.val[0]);
         // NOTE: vreinterpret will change the actual value
         // Use hand-written function instead
-        // int16x8_t signed_high_r = U8ToS16(high_r);
-        // int16x8_t signed_low_r = U8ToS16(low_r);
         int16x8_t signed_high_r = vreinterpretq_s16_u16(vaddl_u8(high_r, u8_zero));
         int16x8_t signed_low_r = vreinterpretq_s16_u16(vaddl_u8(low_r, u8_zero));
 
@@ -371,13 +407,23 @@ int main(int argc, char* argv[])
 
 
     // Compute
-    struct timespec start, end;
-    double total_time;
-    clock_gettime(CLOCK_REALTIME,&start);
+    // struct timespec start, end;
+    // double total_time;
+    // clock_gettime(CLOCK_REALTIME,&start);
+    // RGB2YUV_NEON(yuv, rgb, width * height);
+    // clock_gettime(CLOCK_REALTIME,&end);
+    // total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
+    // printf("RGB2YUV_NEON: %f ms\n", total_time);
+
+    // init counters:
+    init_perfcounters (1, 0);
+    // measure the counting overhead:
+    unsigned int overhead = get_cyclecount();
+    overhead = get_cyclecount() - overhead;
+    unsigned int t = get_cyclecount();
     RGB2YUV_NEON(yuv, rgb, width * height);
-    clock_gettime(CLOCK_REALTIME,&end);
-    total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
-    printf("RGB2YUV_NEON: %f ms\n", total_time);
+    t = get_cyclecount() - t;
+    printf ("function took exactly %d cycles (including function call) ", t - overhead);
 
 
     FILE* fp_out;
