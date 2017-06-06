@@ -138,18 +138,18 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
         uint8x8_t low_r = vget_low_u8(pixel_rgb.val[0]);
         // NOTE: vreinterpret will change the actual value
         // Use hand-written function instead
-        int16x8_t signed_high_r = vreinterpretq_s16_u16(vaddl_u8(high_r, u8_zero));
-        int16x8_t signed_low_r = vreinterpretq_s16_u16(vaddl_u8(low_r, u8_zero));
+        int16x8_t signed_high_r = vreinterpretq_s16_u16(vmovl_u8(high_r));
+        int16x8_t signed_low_r = vreinterpretq_s16_u16(vmovl_u8(low_r));
 
         uint8x8_t high_g = vget_high_u8(pixel_rgb.val[1]);
         uint8x8_t low_g = vget_low_u8(pixel_rgb.val[1]);
-        int16x8_t signed_high_g = vreinterpretq_s16_u16(vaddl_u8(high_g, u8_zero));
-        int16x8_t signed_low_g = vreinterpretq_s16_u16(vaddl_u8(low_g, u8_zero));
+        int16x8_t signed_high_g = vreinterpretq_s16_u16(vmovl_u8(high_g));
+        int16x8_t signed_low_g = vreinterpretq_s16_u16(vmovl_u8(low_g));
 
         uint8x8_t high_b = vget_high_u8(pixel_rgb.val[2]);
         uint8x8_t low_b = vget_low_u8(pixel_rgb.val[2]);
-        int16x8_t signed_high_b = vreinterpretq_s16_u16(vaddl_u8(high_b, u8_zero));
-        int16x8_t signed_low_b = vreinterpretq_s16_u16(vaddl_u8(low_b, u8_zero));
+        int16x8_t signed_high_b = vreinterpretq_s16_u16(vmovl_u8(high_b));
+        int16x8_t signed_low_b = vreinterpretq_s16_u16(vmovl_u8(low_b));
 
 #ifdef DEBUG
         printf("R\n");
@@ -407,23 +407,23 @@ int main(int argc, char* argv[])
 
 
     // Compute
-    // struct timespec start, end;
-    // double total_time;
-    // clock_gettime(CLOCK_REALTIME,&start);
-    // RGB2YUV_NEON(yuv, rgb, width * height);
-    // clock_gettime(CLOCK_REALTIME,&end);
-    // total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
-    // printf("RGB2YUV_NEON: %f ms\n", total_time);
-
-    // init counters:
-    init_perfcounters (1, 0);
-    // measure the counting overhead:
-    unsigned int overhead = get_cyclecount();
-    overhead = get_cyclecount() - overhead;
-    unsigned int t = get_cyclecount();
+    struct timespec start, end;
+    double total_time;
+    clock_gettime(CLOCK_REALTIME,&start);
     RGB2YUV_NEON(yuv, rgb, width * height);
-    t = get_cyclecount() - t;
-    printf ("function took exactly %d cycles (including function call) ", t - overhead);
+    clock_gettime(CLOCK_REALTIME,&end);
+    total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
+    printf("RGB2YUV_NEON: %f ms\n", total_time);
+
+    // // init counters:
+    // init_perfcounters (1, 0);
+    // // measure the counting overhead:
+    // unsigned int overhead = get_cyclecount();
+    // overhead = get_cyclecount() - overhead;
+    // unsigned int t = get_cyclecount();
+    // RGB2YUV_NEON(yuv, rgb, width * height);
+    // t = get_cyclecount() - t;
+    // printf ("function took exactly %d cycles (including function call) ", t - overhead);
 
 
     FILE* fp_out;
