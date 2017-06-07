@@ -1,6 +1,4 @@
-CC = gcc
-
-ARMCC = arm-linux-gnueabihf-gcc
+CC = arm-linux-androideabi-gcc
 
 neon: neon.c
 #	armcc -c --cpu=7 --debug neon.c -o neon.o
@@ -12,9 +10,13 @@ neon: neon.c
 #	arm-linux-gnueabi-gcc -v -lrt -mfloat-abi=softfp -mfpu=neon -o neon neon.c -static
 #	arm-none-eabi-gcc -I/usr/local/DS-5_v5.27.0/sw/gcc/arm-linux-gnueabihf/ -lrt -marm -mfloat-abi=softfp -mfpu=neon -o neon neon.c
 #	arm-none-eabi-gcc -v -marm -march=armv7 -mfloat-abi=softfp -mfpu=neon -o neon neon.c
-#	arm-linux-androideabi-gcc -v -lrt -mfloat-abi=softfp -mfpu=neon -o neon neon.c -static
 #	arm-linux-gnueabihf-gcc -v -lrt -march=armv7 -mfpu=neon -o neon neon.c -static
-	/usr/local/DS-5_v5.27.0/sw/gcc/bin/arm-linux-gnueabihf-gcc -v -lrt -march=armv7 -mfpu=neon -o neon neon.c -static
+#	/usr/local/DS-5_v5.27.0/sw/gcc/bin/arm-linux-gnueabihf-gcc -v -lrt -march=armv7 -mfpu=neon -o neon neon.c -static
+
+#	armcc -O3 -Otime --vectorize --cpu=Cortex-A8 -o neon-func.o -c neon-func.c
+#	arm-linux-gnueabi-gcc -O3 -mfloat-abi=softfp -mfpu=neon -o neon-func-gcc.o -c neon-func.c
+#	arm-linux-androideabi-gcc -v -lrt -mfloat-abi=softfp -mfpu=neon -o neon neon.c -static
+	$(CC) -v -mfloat-abi=softfp -mfpu=neon -o neon neon.c -static
 
 serial: serial.c
 	$(CC) -lrt -o serial serial.c
