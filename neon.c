@@ -325,6 +325,25 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
             : "r2", "memory", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7","d8","d9","d10","d11","d12","d13","d14","d15","d16","d17","d18","d19","d20","d21","d22","d23","d24","d25","d26","d27","d28","d29","d30","d31"
                     );
 
+
+    // Handle leftovers
+    for (i = count * 16; i < pixel_num; ++i) {
+        uint8_t r = rgb[i * 3];
+        uint8_t g = rgb[i * 3 + 1];
+        uint8_t b = rgb[i * 3 + 2];
+
+        uint16_t y_tmp = 76 * r + 150 * g + 29 * b;
+        int16_t u_tmp = -43 * r - 84 * g + 127 * b;
+        int16_t v_tmp = 127 * r - 106 * g - 21 * b;
+
+        y_tmp = (y_tmp + 128) >> 8;
+        u_tmp = (u_tmp + 128) >> 8;
+        v_tmp = (v_tmp + 128) >> 8;
+
+        yuv[i * 3] = (uint8_t) y_tmp;
+        yuv[i * 3 + 1] = (uint8_t) (u_tmp + 128);
+        yuv[i * 3 + 2] = (uint8_t) (v_tmp + 128);
+    }
 }
 
 
