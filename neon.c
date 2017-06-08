@@ -582,29 +582,29 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
             // high_u = vmlaq_s16(high_u, signed_high_g, signed_scalar);
             // low_u = vmlaq_s16(low_u, signed_low_g, signed_scalar);
             "VMVN.I16 q1,#0x53\t\n"
-            "VMUL.I16 q13,q7,q1\t\n"
-            "VMUL.I16 q14,q8,q1\t\n"
+            "VMLA.I16 q13,q7,q1\t\n"
+            "VMLA.I16 q14,q8,q1\t\n"
 
             // signed_scalar = vdupq_n_s16(-106);
             // high_v = vmlaq_s16(high_v, signed_high_g, signed_scalar);
             // low_v = vmlaq_s16(low_v, signed_low_g, signed_scalar);
             "VMVN.I16 q2,#0x69\t\n"
-            "VMUL.I16 q15,q7,q2\t\n"
-            "VMUL.I16 q0,q8,q2\t\n"
+            "VMLA.I16 q15,q7,q2\t\n"
+            "VMLA.I16 q0,q8,q2\t\n"
 
             // signed_scalar = vdupq_n_s16(127);
             // high_u = vmlaq_s16(high_u, signed_high_b, signed_scalar);
             // low_u = vmlaq_s16(low_u, signed_low_b, signed_scalar);
             "VMOV.I16 q1,#0x7f\t\n"
-            "VMUL.I16 q13,q9,q1\t\n"
-            "VMUL.I16 q14,q10,q1\t\n"
+            "VMLA.I16 q13,q9,q1\t\n"
+            "VMLA.I16 q14,q10,q1\t\n"
 
             // signed_scalar = vdupq_n_s16(-21);
             // high_v = vmlaq_s16(high_v, signed_high_b, signed_scalar);
             // low_v = vmlaq_s16(low_v, signed_low_b, signed_scalar);
             "VMVN.I16 q2,#0x14\t\n"
-            "VMUL.I16 q15,q9,q2\t\n"
-            "VMUL.I16 q0,q10,q2\t\n"
+            "VMLA.I16 q15,q9,q2\t\n"
+            "VMLA.I16 q0,q10,q2\t\n"
 
             // TODO
             // "\t\n"
