@@ -172,7 +172,7 @@ void RGB2YUV_NEON_Intrinsics(unsigned char * __restrict__ yuv, unsigned char * _
     }
 }
 
-void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, int pixel_num)
+void RGB2YUV_NEON_assembly(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, int pixel_num)
 {
     int count = pixel_num / 16;
 
@@ -327,6 +327,7 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
 
 
     // Handle leftovers
+    int i;
     for (i = count * 16; i < pixel_num; ++i) {
         uint8_t r = rgb[i * 3];
         uint8_t g = rgb[i * 3 + 1];
@@ -346,6 +347,78 @@ void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__
     }
 }
 
+void RGB2YUV_NEON(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, int pixel_num)
+{
+    int count = pixel_num / 16;
+
+    asm volatile(
+            "VMOV.I16 q3,#0x80\t\n"
+            "VMOV.I8  q4,#0x80\t\n"
+            "MOV      r2,#0\t\n"
+            "LOOP1: \t\n"
+            "ADD      r12,r1,#0x18\t\n"
+            "VLD3.8   {d0,d2,d4},[r1]\t\n"
+            "VLD3.8   {d1,d3,d5},[r12]\t\n"
+            "VMOV.I8  d26,#0x4c\t\n"
+            "VMOVL.U8 q5,d0\t\n"
+            "VMOVL.U8 q6,d1\t\n"
+            "VMULL.U8 q11,d0,d26\t\n"
+            "VMULL.U8 q12,d1,d26\t\n"
+            "VMOV.I8  d26,#0x96\t\n"
+            "VMOVL.U8 q7,d2\t\n"
+            "VMOVL.U8 q8,d3\t\n"
+            "VMLAL.U8 q11,d2,d26\t\n"
+            "VMLAL.U8 q12,d3,d26\t\n"
+            "VMOV.I8  d26,#0x1d\t\n"
+            "VMOVL.U8 q9,d4\t\n"
+            "VMOVL.U8 q10,d5\t\n"
+            "VMLAL.U8 q11,d4,d26\t\n"
+            "VMLAL.U8 q12,d5,d26\t\n"
+            "VMVN.I16 q1,#0x2a\t\n"
+            "VMOV.I16 q2,#0x7f\t\n"
+            "VMUL.I16 q13,q1,q5\t\n"
+            "VMUL.I16 q14,q1,q6\t\n"
+            "VMUL.I16 q15,q2,q5\t\n"
+            "VMUL.I16 q0,q2,q6\t\n"
+            "VMVN.I16 q1,#0x53\t\n"
+            "VMVN.I16 q2,#0x69\t\n"
+            "VMLA.I16 q13,q1,q7\t\n"
+            "VMLA.I16 q14,q1,q8\t\n"
+            "VMLA.I16 q15,q2,q7\t\n"
+            "VMLA.I16 q0,q2,q8\t\n"
+            "VMOV.I16 q1,#0x7f\t\n"
+            "VMVN.I16 q2,#0x14\t\n"
+            "VMLA.I16 q13,q9,q1\t\n"
+            "VMLA.I16 q14,q10,q1\t\n"
+            "VMLA.I16 q15,q9,q2\t\n"
+            "VMLA.I16 q0,q10,q2\t\n"
+            "VADD.I16 q11,q11,q3\t\n"
+            "VADD.I16 q12,q12,q3\t\n"
+            "VADD.I16 q13,q13,q3\t\n"
+            "VADD.I16 q14,q14,q3\t\n"
+            "VADD.I16 q15,q15,q3\t\n"
+            "VADD.I16 q0,q0,q3\t\n"
+            "VQSHRN.S16 d12,q13,#8\t\n"
+            "VQSHRN.S16 d13,q14,#8\t\n"
+            "VQSHRN.S16 d14,q15,#8\t\n"
+            "VQSHRN.S16 d15,q0,#8\t\n"
+            "VQSHRN.U16 d10,q11,#8\t\n"
+            "VQSHRN.U16 d11,q12,#8\t\n"
+            "VADD.I8  q6,q6,q4\t\n"
+            "VADD.I8  q7,q7,q4\t\n"
+            "ADD      r12,r0,#0x18\t\n"
+            "ADD      r1,r1,#0x30\t\n"
+            "VST3.8   {d10,d12,d14},[r0]\t\n"
+            "VST3.8   {d11,d13,d15},[r12]\t\n"
+            "ADD      r2,r2,#1\t\n"
+            "ADD      r0,r0,#0x30\t\n"
+            "CMP      r2,r3\t\n"
+            "BLT      LOOP1\t\n"
+            : [r0] "+r" (yuv), [r1] "+r" (rgb), [r3] "+r" (count)
+            :
+                : "r2", "memory", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7","d8","d9","d10","d11","d12","d13","d14","d15","d16","d17","d18","d19","d20","d21","d22","d23","d24","d25","d26","d27","d28","d29","d30","d31"
+                    );
+}
 
 int main(int argc, char* argv[])
 {
