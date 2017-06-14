@@ -1,6 +1,6 @@
 # rgb2yuv-neon
 
-Transform from RGB888 to YUV888 using ARM NEON.
+Transform from RGB888 to YUV444 using ARM NEON.
 
 ## Compile
 
