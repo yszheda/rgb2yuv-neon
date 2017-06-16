@@ -14,23 +14,23 @@ void encodeYUV420SP(unsigned char * yuv420sp, unsigned char * argb, int width, i
     int i, j;
     for (j = 0; j < height; j++) {
         for (i = 0; i < width; i++) {
-            uint8_t A = argb[i * 4];
-            uint8_t R = argb[i * 4 + 1];
-            uint8_t G = argb[i * 4 + 2];
-            uint8_t B = argb[i * 4 + 3];
+            int A = argb[(j * width + i) * 4];
+            int R = argb[(j * width + i) * 4 + 1];
+            int G = argb[(j * width + i) * 4 + 2];
+            int B = argb[(j * width + i) * 4 + 3];
 
             // well known RGB to YUV algorithm
-            uint8_t Y = (( 66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
-            uint8_t U = ((-38 * R -  74 * G + 112 * B + 128) >> 8) + 128;
-            uint8_t V = ((112 * R -  94 * G -  18 * B + 128) >> 8) + 128;
+            int Y = (( 66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
+            int U = ((-38 * R -  74 * G + 112 * B + 128) >> 8) + 128;
+            int V = ((112 * R -  94 * G -  18 * B + 128) >> 8) + 128;
 
             // NV21 has a plane of Y and interleaved planes of VU each sampled by a factor of 2
             //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
             //    pixel AND every other scanline.
             yuv420sp[yIndex++] = (unsigned char) ((Y < 0)? 0: ((Y > 255) ? 255 : Y));
             if (j % 2 == 0 && index % 2 == 0) {
-                yuv420sp[uvIndex++] = (unsigned char)((U < 0) ? 0 : ((U > 255) ? 255 : U));
-                yuv420sp[uvIndex++] = (unsigned char)((V < 0) ? 0 : ((V > 255) ? 255 : V));
+                yuv420sp[uvIndex++] = (unsigned char) ((V < 0) ? 0 : ((V > 255) ? 255 : V));
+                yuv420sp[uvIndex++] = (unsigned char) ((U < 0) ? 0 : ((U > 255) ? 255 : U));
             }
 
             index ++;
@@ -121,8 +121,8 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
                 u = vaddq_s16(u, s16_rounding);
                 v = vaddq_s16(v, s16_rounding);
 
-                uv.val[0] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(u, 8), s8_rounding));
-                uv.val[1] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(v, 8), s8_rounding));
+                uv.val[1] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(u, 8), s8_rounding));
+                uv.val[0] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(v, 8), s8_rounding));
 
                 vst2_u8(yuv420sp + uvIndex, uv);
 
