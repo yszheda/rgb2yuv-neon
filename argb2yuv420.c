@@ -14,10 +14,10 @@ void encodeYUV420SP(unsigned char * yuv420sp, unsigned char * argb, int width, i
     int i, j;
     for (j = 0; j < height; j++) {
         for (i = 0; i < width; i++) {
-            int A = argb[(j * width + i) * 4];
-            int R = argb[(j * width + i) * 4 + 1];
-            int G = argb[(j * width + i) * 4 + 2];
-            int B = argb[(j * width + i) * 4 + 3];
+            int A = argb[(j * width + i) * 4 + 3];
+            int R = argb[(j * width + i) * 4 + 2];
+            int G = argb[(j * width + i) * 4 + 1];
+            int B = argb[(j * width + i) * 4 + 0];
 
             // well known RGB to YUV algorithm
             int Y = (( 66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
@@ -59,12 +59,12 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
             uint8x16x4_t pixel_argb = vld4q_u8(argb);
             argb += 4 * 16;
 
-            uint8x8_t high_r = vget_high_u8(pixel_argb.val[1]);
-            uint8x8_t low_r = vget_low_u8(pixel_argb.val[1]);
-            uint8x8_t high_g = vget_high_u8(pixel_argb.val[2]);
-            uint8x8_t low_g = vget_low_u8(pixel_argb.val[2]);
-            uint8x8_t high_b = vget_high_u8(pixel_argb.val[3]);
-            uint8x8_t low_b = vget_low_u8(pixel_argb.val[3]);
+            uint8x8_t high_r = vget_high_u8(pixel_argb.val[2]);
+            uint8x8_t low_r = vget_low_u8(pixel_argb.val[2]);
+            uint8x8_t high_g = vget_high_u8(pixel_argb.val[1]);
+            uint8x8_t low_g = vget_low_u8(pixel_argb.val[1]);
+            uint8x8_t high_b = vget_high_u8(pixel_argb.val[0]);
+            uint8x8_t low_b = vget_low_u8(pixel_argb.val[0]);
 
             // NOTE:
             // declaration may not appear after executable statement in block
@@ -97,9 +97,9 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
                 int16x8_t u_scalar = vdupq_n_s16(-38);
                 int16x8_t v_scalar = vdupq_n_s16(112);
 
-                int16x8_t r = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), 8), 8)));
-                int16x8_t g = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), 8), 8)));
-                int16x8_t b = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[3]), 8), 8)));
+                int16x8_t r = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), 8), 8)));
+                int16x8_t g = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), 8), 8)));
+                int16x8_t b = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), 8), 8)));
 
                 int16x8_t u;
                 int16x8_t v;
@@ -132,9 +132,9 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
 
         // Handle leftovers
         for (i = ((width >> 4) << 4); i < width; i++) {
-            uint8_t R = argb[1];
-            uint8_t G = argb[2];
-            uint8_t B = argb[3];
+            uint8_t R = argb[2];
+            uint8_t G = argb[1];
+            uint8_t B = argb[0];
             argb += 4;
 
             // well known RGB to YUV algorithm
@@ -147,8 +147,8 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
             //    pixel AND every other scanline.
             yuv420sp[yIndex++] = Y;
             if (j % 2 == 0 && i % 2 == 0) {
-                yuv420sp[uvIndex++] = U;
                 yuv420sp[uvIndex++] = V;
+                yuv420sp[uvIndex++] = U;
             }
         }
     }
