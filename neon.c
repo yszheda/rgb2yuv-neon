@@ -480,5 +480,8 @@ int main(int argc, char* argv[])
     }
     fclose(fp_out);
 
+    free(rgb);
+    free(yuv);
+
     return 0;
 }

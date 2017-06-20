@@ -79,6 +79,45 @@ void RGB2YUV_float(unsigned char *yuv, unsigned char *rgb, int pixel_num)
     }
 }
 
+void encodeYUV420SP(unsigned char * yuv420sp, unsigned char * argb, int width, int height)
+{
+    int frameSize = width * height;
+
+    int yIndex = 0;
+    int uvIndex = frameSize;
+
+    int index = 0;
+    int i, j;
+    for (j = 0; j < height; j++) {
+        for (i = 0; i < width; i++) {
+            int A = argb[(j * width + i) * 4];
+            int R = argb[(j * width + i) * 4 + 1];
+            int G = argb[(j * width + i) * 4 + 2];
+            int B = argb[(j * width + i) * 4 + 3];
+
+            // well known RGB to YUV algorithm
+            int Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
+            int U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128;
+            int V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128;
+
+            // NV21 has a plane of Y and interleaved planes of VU each sampled by a factor of 2
+            //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
+            //    pixel AND every other scanline.
+            yuv420sp[yIndex++] = (unsigned char) ((Y < 0) ? 0 : ((Y > 255) ? 255 : Y));
+            // yuv420sp[yIndex++] = (unsigned char) Y;
+            if (j % 2 == 0 && index % 2 == 0) {
+                yuv420sp[uvIndex++] = (unsigned char)((V<0) ? 0 : ((V > 255) ? 255 : V));
+                yuv420sp[uvIndex++] = (unsigned char)((U<0) ? 0 : ((U > 255) ? 255 : U));
+                // yuv420sp[uvIndex++] = (unsigned char) V;
+                // yuv420sp[uvIndex++] = (unsigned char) U;
+            }
+
+            index ++;
+        }
+    }
+}
+
+
 int main(int argc, char* argv[])
 {
     if (argc != 3 && argc != 4) {
@@ -95,10 +134,13 @@ int main(int argc, char* argv[])
     int width, height;
     fscanf(fp_in, "%d %d", &width, &height);
 
-    int channel_num = width * height * 3;
+    // int channel_num = width * height * 3;
+    int channel_num = width * height * 4;
     int channel_datasize = channel_num * sizeof(unsigned char);
+    int channel_num_yuv = width * height * 6 / 4;
+    int channel_datasize_yuv = channel_num_yuv * sizeof(unsigned char);
     unsigned char *rgb = (unsigned char *) malloc(channel_datasize);
-    unsigned char *yuv = (unsigned char *) malloc(channel_datasize);
+    unsigned char *yuv = (unsigned char *) malloc(channel_datasize_yuv);
 
     if (fread(rgb, sizeof(unsigned char), channel_num, fp_in) == EOF) {
         printf("fread error!\n");
@@ -112,11 +154,13 @@ int main(int argc, char* argv[])
     struct timespec start, end;
     double total_time;
     clock_gettime(CLOCK_REALTIME,&start);
-    if (argc >= 4 && strcmp(argv[3], "-f") == 0) {
-        RGB2YUV_float(yuv, rgb, width * height);
-    } else {
-        RGB2YUV_integer(yuv, rgb, width * height);
-    }
+//    if (argc >= 4 && strcmp(argv[3], "-f") == 0) {
+//        RGB2YUV_float(yuv, rgb, width * height);
+//    } else {
+//        RGB2YUV_integer(yuv, rgb, width * height);
+//    }
+
+    encodeYUV420SP(yuv, rgb, width, height);
     clock_gettime(CLOCK_REALTIME,&end);
     total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
     printf("RGB2YUV_serial: %f ms\n", total_time);
@@ -128,12 +172,15 @@ int main(int argc, char* argv[])
         printf("Error open output file!\n");
         exit(1);
     }
-    if(fwrite(yuv, sizeof(unsigned char), channel_num, fp_out) != channel_datasize)
+    if(fwrite(yuv, sizeof(unsigned char), channel_num_yuv, fp_out) != channel_datasize_yuv)
     {
         printf("fwrite error!\n");
         exit(0);
     }
     fclose(fp_out);
+
+    free(rgb);
+    free(yuv);
 
     return 0;
 }

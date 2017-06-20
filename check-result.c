@@ -15,7 +15,8 @@ int main(int argc, char* argv[])
     }
     int width, height;
     fscanf(fp1, "%d %d", &width, &height);
-    int channel_num = width * height * 3;
+    // int channel_num = width * height * 3;
+    int channel_num = width * height * 4;
     int channel_datasize = channel_num * sizeof(unsigned char);
     uint8_t *pixels1 = (uint8_t*) malloc(channel_datasize);
     uint8_t *pixels2 = (uint8_t*) malloc(channel_datasize);
@@ -60,14 +61,23 @@ int main(int argc, char* argv[])
                 channel_name = 'v';
             }
 
-            int pixel_idx = (int) i / 3;
-            uint8_t r = pixels1[pixel_idx * 3];
-            uint8_t g = pixels1[pixel_idx * 3 + 1];
-            uint8_t b = pixels1[pixel_idx * 3 + 2];
+            // int pixel_idx = (int) i / 3;
+            // uint8_t r = pixels1[pixel_idx * 3];
+            // uint8_t g = pixels1[pixel_idx * 3 + 1];
+            // uint8_t b = pixels1[pixel_idx * 3 + 2];
+
+            int pixel_idx = (int) i / 4;
+            uint8_t r = pixels1[pixel_idx * 4 + 1];
+            uint8_t g = pixels1[pixel_idx * 4 + 2];
+            uint8_t b = pixels1[pixel_idx * 4 + 3];
 
             printf("%d pixel [rgb] %d %d %d [yuv] %c : %d %d\n", pixel_idx, r, g, b, channel_name, pixels2[i], pixels3[i]);
         }
     }
+
+    free(pixels1);
+    free(pixels2);
+    free(pixels3);
 
     return 0;
 }
