@@ -45,6 +45,7 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
     const int16x8_t s16_rounding = vdupq_n_s16(128);
     const int8x8_t s8_rounding = vdup_n_s8(128);
     const uint8x16_t offset = vdupq_n_u8(16);
+    const uint16x8_t mask = vdupq_n_s16(255);
 
     int frameSize = width * height;
 
@@ -59,34 +60,36 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
             uint8x16x4_t pixel_argb = vld4q_u8(argb);
             argb += 4 * 16;
 
-            uint8x8_t high_r = vget_high_u8(pixel_argb.val[2]);
-            uint8x8_t low_r = vget_low_u8(pixel_argb.val[2]);
-            uint8x8_t high_g = vget_high_u8(pixel_argb.val[1]);
-            uint8x8_t low_g = vget_low_u8(pixel_argb.val[1]);
-            uint8x8_t high_b = vget_high_u8(pixel_argb.val[0]);
-            uint8x8_t low_b = vget_low_u8(pixel_argb.val[0]);
+            uint8x8x2_t uint8_r;
+            uint8x8x2_t uint8_g;
+            uint8x8x2_t uint8_b;
+            uint8_r.val[0] = vget_low_u8(pixel_argb.val[2]);
+            uint8_r.val[1] = vget_high_u8(pixel_argb.val[2]);
+            uint8_g.val[0] = vget_low_u8(pixel_argb.val[1]);
+            uint8_g.val[1] = vget_high_u8(pixel_argb.val[1]);
+            uint8_b.val[0] = vget_low_u8(pixel_argb.val[0]);
+            uint8_b.val[1] = vget_high_u8(pixel_argb.val[0]);
 
             // NOTE:
             // declaration may not appear after executable statement in block
-            uint16x8_t high_y;
-            uint16x8_t low_y;
+            uint16x8x2_t uint16_y;
 
             uint8x8_t scalar = vdup_n_u8(66);
             uint8x16_t y;
 
-            high_y = vmull_u8(high_r, scalar);
-            low_y = vmull_u8(low_r, scalar);
+            uint16_y.val[0] = vmull_u8(uint8_r.val[0], scalar);
+            uint16_y.val[1] = vmull_u8(uint8_r.val[1], scalar);
             scalar = vdup_n_u8(129);
-            high_y = vmlal_u8(high_y, high_g, scalar);
-            low_y = vmlal_u8(low_y, low_g, scalar);
+            uint16_y.val[0] = vmlal_u8(uint16_y.val[0], uint8_g.val[0], scalar);
+            uint16_y.val[1] = vmlal_u8(uint16_y.val[1], uint8_g.val[1], scalar);
             scalar = vdup_n_u8(25);
-            high_y = vmlal_u8(high_y, high_b, scalar);
-            low_y = vmlal_u8(low_y, low_b, scalar);
+            uint16_y.val[0] = vmlal_u8(uint16_y.val[0], uint8_b.val[0], scalar);
+            uint16_y.val[1] = vmlal_u8(uint16_y.val[1], uint8_b.val[1], scalar);
 
-            high_y = vaddq_u16(high_y, u16_rounding);
-            low_y = vaddq_u16(low_y, u16_rounding);
+            uint16_y.val[0] = vaddq_u16(uint16_y.val[0], u16_rounding);
+            uint16_y.val[1] = vaddq_u16(uint16_y.val[1], u16_rounding);
 
-            y = vcombine_u8(vqshrn_n_u16(low_y, 8), vqshrn_n_u16(high_y, 8));
+            y = vcombine_u8(vqshrn_n_u16(uint16_y.val[0], 8), vqshrn_n_u16(uint16_y.val[1], 8));
             y = vaddq_u8(y, offset);
 
             vst1q_u8(yuv420sp + yIndex, y);
@@ -100,6 +103,9 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
                 int16x8_t r = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), 8), 8)));
                 int16x8_t g = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), 8), 8)));
                 int16x8_t b = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), 8), 8)));
+                // int16x8_t r = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), mask));
+                // int16x8_t g = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), mask)));
+                // int16x8_t b = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), mask)));
 
                 int16x8_t u;
                 int16x8_t v;
