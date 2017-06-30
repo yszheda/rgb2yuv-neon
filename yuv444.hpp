@@ -20,6 +20,8 @@
 
 #include "enum.hpp"
 
-void RGB2YUV444(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, const int width, const int height, const ColorConversionCodes code, const bool useNEON);
+namespace YUV444 {
+    void convert(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, const int width, const int height, const ColorConversionCodes code, const bool useNEON);
+}
 
 #endif /* YUV444_HPP */

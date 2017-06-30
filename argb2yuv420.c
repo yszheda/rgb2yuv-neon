@@ -100,19 +100,21 @@ void encodeYUV420SP_NEON_Intrinsics(unsigned char * __restrict__ yuv420sp, unsig
                 int16x8_t u_scalar = vdupq_n_s16(-38);
                 int16x8_t v_scalar = vdupq_n_s16(112);
 
-                int16x8_t r = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), 8), 8)));
-                int16x8_t g = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), 8), 8)));
-                int16x8_t b = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), 8), 8)));
-                // int16x8_t r = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), mask));
-                // int16x8_t g = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), mask)));
-                // int16x8_t b = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), mask)));
+                // int16x8_t r = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), 8), 8)));
+                // int16x8_t g = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), 8), 8)));
+                // int16x8_t b = vreinterpretq_s16_u16(vmovl_u8(vqshrn_n_u16(vshlq_n_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), 8), 8)));
+                int16x8_t r = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[2]), mask));
+                int16x8_t g = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[1]), mask));
+                int16x8_t b = vreinterpretq_s16_u16(vandq_u16(vreinterpretq_u16_u8(pixel_argb.val[0]), mask));
 
                 int16x8_t u;
                 int16x8_t v;
                 uint8x8x2_t uv;
 
-                u = vmulq_s16(r, u_scalar);
-                v = vmulq_s16(r, v_scalar);
+                // u = vmulq_s16(r, u_scalar);
+                // v = vmulq_s16(r, v_scalar);
+                u = vmulq_n_s16(r, -38);
+                v = vmulq_n_s16(r, 112);
 
                 u_scalar = vdupq_n_s16(-74);
                 v_scalar = vdupq_n_s16(-94);

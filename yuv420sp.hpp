@@ -20,6 +20,8 @@
 
 #include "enum.hpp"
 
-void RGB2YUV420SP(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, const int width, const int height, const ColorConversionCodes code, const bool useNEON);
+namespace YUV420SP {
+    void convert(unsigned char * __restrict__ yuv, unsigned char * __restrict__ rgb, const int width, const int height, const ColorConversionCodes code, const bool useNEON);
+}
 
 #endif /* YUV420SP_HPP */

@@ -24,6 +24,7 @@ enum class ColorConversionCodes {
     // YUV420SP
     RGB2YUV420_NV21        = 2,
     RGBA2YUV420_NV21       = 3,
+    // YUV420P
     RGB2YUV420_NV12        = 4,
     RGBA2YUV420_NV12       = 5,
     NUM                    = 6,

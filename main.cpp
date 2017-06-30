@@ -22,6 +22,7 @@
 #include <cassert>
 #include <string>
 #include <map>
+#include <memory>
 
 #include "enum.hpp"
 #include "yuv420sp.hpp"
@@ -94,11 +95,15 @@ int main(int argc, char* argv[])
 
     int rgbChannelNum = channel_num(code);
     int rgbDataSize = width * height * rgbChannelNum * sizeof(unsigned char);
+    // NOTE: stlport_static do not support unique_ptr
+    // std::unique_ptr<unsigned char []> rgb(new unsigned char[rgbDataSize]);
     unsigned char *rgb = (unsigned char *) malloc(rgbDataSize);
 
     int yuvDataSize = width * height * yuv_size_factor(code) * sizeof(unsigned char);
+    // std::unique_ptr<unsigned char []>yuv(new unsigned char[yuvDataSize]);
     unsigned char *yuv = (unsigned char *) malloc(yuvDataSize);
 
+    // if (fread(rgb.get(), sizeof(unsigned char), rgbDataSize, fpIn) == EOF) {
     if (fread(rgb, sizeof(unsigned char), rgbDataSize, fpIn) == EOF) {
         printf("fread error!\n");
         exit(0);
@@ -110,9 +115,10 @@ int main(int argc, char* argv[])
     // Compute
     struct timespec start, end;
     double total_time;
-    clock_gettime(CLOCK_REALTIME,&start);
-    RGB2YUV420SP(yuv, rgb, width, height, code, true);
-    clock_gettime(CLOCK_REALTIME,&end);
+    clock_gettime(CLOCK_REALTIME, &start);
+    // YUV420SP::convert(yuv.get(), rgb.get(), width, height, code, true);
+    YUV420SP::convert(yuv, rgb, width, height, code, true);
+    clock_gettime(CLOCK_REALTIME, &end);
     total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
     printf("RGB2YUV_NEON: %f ms\n", total_time);
 
@@ -122,6 +128,7 @@ int main(int argc, char* argv[])
         printf("Error open output file!\n");
         exit(1);
     }
+    // if (fwrite(yuv.get(), sizeof(unsigned char), yuvDataSize, fpOut) != yuvDataSize) {
     if (fwrite(yuv, sizeof(unsigned char), yuvDataSize, fpOut) != yuvDataSize) {
         printf("fwrite error!\n");
         exit(0);

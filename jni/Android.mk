@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)/..
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := rgb2yuv
-LOCAL_SRC_FILES := main.cpp yuv420sp.cpp
+LOCAL_SRC_FILES := main.cpp yuv420sp.cpp yuv444.cpp
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
 LOCAL_CFLAGS := -pie -fPIE -v -O3 -ftree-vectorize -mfloat-abi=softfp -mfpu=neon -std=c++11
