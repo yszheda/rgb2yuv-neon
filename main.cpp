@@ -34,7 +34,7 @@
 template<typename T, class F, class... Args>
 void time_measure(T&& funcTag, F&& func, Args&&... args)
 {
-    const int cnt = 1000;
+    const int cnt = 100;
     auto begin = std::chrono::steady_clock::now();
     for (auto i = 0; i < cnt; i++) {
         std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
@@ -110,38 +110,31 @@ int main(int argc, char* argv[])
     int rgbChannelNum = channel_num(code);
     int rgbDataSize = width * height * rgbChannelNum * sizeof(unsigned char);
     // NOTE: stlport_static do not support unique_ptr
-    // std::unique_ptr<unsigned char []> rgb(new unsigned char[rgbDataSize]);
-    unsigned char *rgb = (unsigned char *) malloc(rgbDataSize);
+    // Use gnustl_static in Application.mk
+    std::unique_ptr<unsigned char []> rgb(new unsigned char[rgbDataSize]);
 
     int yuvDataSize = width * height * yuv_size_factor(code) * sizeof(unsigned char);
-    // std::unique_ptr<unsigned char []>yuv(new unsigned char[yuvDataSize]);
-    unsigned char *yuv = (unsigned char *) malloc(yuvDataSize);
+    std::unique_ptr<unsigned char []>yuv(new unsigned char[yuvDataSize]);
 
-    // if (fread(rgb.get(), sizeof(unsigned char), rgbDataSize, fpIn) == EOF) {
-    if (fread(rgb, sizeof(unsigned char), rgbDataSize, fpIn) == EOF) {
+    if (fread(rgb.get(), sizeof(unsigned char), rgbDataSize, fpIn) == EOF) {
         printf("fread error!\n");
         exit(0);
     }
     fclose(fpIn);
 
-
-    time_measure<>("RGB2YUV420SP with NEON", YUV420SP::convert, yuv, rgb, width, height, code, true);
-
+    time_measure<>("RGB2YUV420SP without NEON", YUV420SP::convert, yuv.get(), rgb.get(), width, height, code, false);
+    time_measure<>("RGB2YUV420SP with NEON", YUV420SP::convert, yuv.get(), rgb.get(), width, height, code, true);
 
     FILE* fpOut;
     if ((fpOut = fopen(outFileName, "w")) == NULL) {
         printf("Error open output file!\n");
         exit(1);
     }
-    // if (fwrite(yuv.get(), sizeof(unsigned char), yuvDataSize, fpOut) != yuvDataSize) {
-    if (fwrite(yuv, sizeof(unsigned char), yuvDataSize, fpOut) != yuvDataSize) {
+    if (fwrite(yuv.get(), sizeof(unsigned char), yuvDataSize, fpOut) != yuvDataSize) {
         printf("fwrite error!\n");
         exit(0);
     }
     fclose(fpOut);
-
-    free(rgb);
-    free(yuv);
 
     return 0;
 }
