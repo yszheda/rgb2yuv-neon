@@ -15,19 +15,33 @@
  *
  * =====================================================================================
  */
+#include <getopt.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
-#include <getopt.h>
 #include <cassert>
+#include <iostream>
 #include <string>
 #include <map>
 #include <memory>
+#include <chrono>
 
 #include "enum.hpp"
 #include "yuv420sp.hpp"
 
-using namespace std;
+
+// Use type T to deduce const char
+template<typename T, class F, class... Args>
+void time_measure(T&& funcTag, F&& func, Args&&... args)
+{
+    const int cnt = 1000;
+    auto begin = std::chrono::steady_clock::now();
+    for (auto i = 0; i < cnt; i++) {
+        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
+    }
+    auto end = std::chrono::steady_clock::now();
+    std::cout << funcTag << " Time = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() / cnt << " ns." << std::endl;
+}
 
 
 void show_help_info()
@@ -108,19 +122,10 @@ int main(int argc, char* argv[])
         printf("fread error!\n");
         exit(0);
     }
-
     fclose(fpIn);
 
 
-    // Compute
-    struct timespec start, end;
-    double total_time;
-    clock_gettime(CLOCK_REALTIME, &start);
-    // YUV420SP::convert(yuv.get(), rgb.get(), width, height, code, true);
-    YUV420SP::convert(yuv, rgb, width, height, code, true);
-    clock_gettime(CLOCK_REALTIME, &end);
-    total_time = (double)(end.tv_sec - start.tv_sec) * 1000 + (double)(end.tv_nsec - start.tv_nsec) / (double)1000000L;
-    printf("RGB2YUV_NEON: %f ms\n", total_time);
+    time_measure<>("RGB2YUV420SP with NEON", YUV420SP::convert, yuv, rgb, width, height, code, true);
 
 
     FILE* fpOut;
