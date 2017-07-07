@@ -242,8 +242,8 @@ namespace YUV444 {
 
                     // uint8x16x3_t pixel_rgb = vld3q_u8(rgb);
                     "ADD      r12,r1,#0x18\t\n"
-                    "VLD3.8   {d4,d2,d0},[r1]\t\n"
-                    "VLD3.8   {d5,d3,d1},[r12]\t\n"
+                    "VLD3.8   {d0,d2,d4},[r1]\t\n"
+                    "VLD3.8   {d1,d3,d5},[r12]\t\n"
 
                     // int16x8_t signed_high_r = vreinterpretq_s16_u16(vmovl_u8(high_r));
                     // int16x8_t signed_low_r = vreinterpretq_s16_u16(vmovl_u8(low_r));
@@ -405,8 +405,9 @@ namespace YUV444 {
                     "MOV      r2,#0\t\n"
                     "LOOP1: \t\n"
                     "ADD      r12,r1,#0x18\t\n"
-                    "VLD3.8   {d4,d2,d0},[r1]\t\n"
-                    "VLD3.8   {d5,d3,d1},[r12]\t\n"
+                    // TODO: byte order
+                    "VLD3.8   {d0,d2,d4},[r1]\t\n"
+                    "VLD3.8   {d1,d3,d5},[r12]\t\n"
                     "VMOV.I8  d26,#0x4c\t\n"
                     "VMOVL.U8 q5,d0\t\n"
                     "VMOVL.U8 q6,d1\t\n"
