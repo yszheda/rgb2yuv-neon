@@ -32,7 +32,7 @@ enum class ColorConversionCodes {
 
 inline bool has_alpha_channel(ColorConversionCodes code) { return static_cast<int>(code) % 2 == 1; }
 
-inline bool channel_num(ColorConversionCodes code)
+inline int channel_num(ColorConversionCodes code)
 {
     if (has_alpha_channel(code)) {
         return 4;

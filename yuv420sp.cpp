@@ -98,7 +98,7 @@ namespace YUV420SP {
             const int16x8_t s16_rounding = vdupq_n_s16(128);
             const int8x8_t s8_rounding = vdup_n_s8(128);
             const uint8x16_t offset = vdupq_n_u8(16);
-            const uint16x8_t mask = vdupq_n_s16(255);
+            const uint16x8_t mask = vdupq_n_u16(255);
 
             int frameSize = width * height;
 
@@ -182,8 +182,8 @@ namespace YUV420SP {
                         u = vaddq_s16(u, s16_rounding);
                         v = vaddq_s16(v, s16_rounding);
 
-                        uv.val[0 + uvOrder] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(u, 8), s8_rounding));
-                        uv.val[1 - uvOrder] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(v, 8), s8_rounding));
+                        uv.val[1 - uvOrder] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(u, 8), s8_rounding));
+                        uv.val[0 + uvOrder] = vreinterpret_u8_s8(vadd_s8(vqshrn_n_s16(v, 8), s8_rounding));
 
                         vst2_u8(yuv + uvIndex, uv);
 
